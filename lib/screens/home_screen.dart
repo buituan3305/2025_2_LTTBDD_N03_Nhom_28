@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../models/mock_data.dart';
 import '../models/transaction.dart';
+import '../widgets/new_transaction.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,7 +11,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Hàm tính tổng số dư hiện tại
+  // Hàm tính tổng số dư
   double get _totalBalance {
     double total = 0;
     for (var tx in mockTransactions) {
@@ -23,11 +24,39 @@ class _HomeScreenState extends State<HomeScreen> {
     return total;
   }
 
+  // Hàm thêm giao dịch mới
+  void _addNewTransaction(String txTitle, double txAmount, bool isIncome) {
+    final newTx = Transaction(
+      id: DateTime.now().toString(),
+      title: txTitle,
+      amount: txAmount,
+      date: DateTime.now(),
+      isIncome: isIncome,
+    );
+
+    setState(() {
+      mockTransactions.insert(0, newTx); // Chèn lên đầu danh sách
+    });
+  }
+
+  // Hàm mở Bottom Sheet (Form nhập liệu)
+  void _startAddNewTransaction(BuildContext ctx) {
+    showModalBottomSheet(
+      context: ctx,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return NewTransaction(_addNewTransaction);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:
-          Colors.grey[100], // Màu nền xám nhạt giúp các Card nổi bật hơn
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(
           'Quản lý Tài chính',
@@ -40,14 +69,14 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: Icon(Icons.info_outline, color: Colors.blue),
             onPressed: () {
-              // Chuyển sang trang Thông tin nhóm (làm ở phần sau)
+              // Chuyển sang trang Thông tin nhóm
             },
           ),
         ],
       ),
       body: Column(
         children: [
-          // Phần 1: Thẻ Tổng số dư (Dashboard Card)
+          // Thẻ Tổng số dư
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(16),
@@ -56,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              color: const Color.fromARGB(255, 245, 130, 73),
+              color: Colors.blueAccent,
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 child: Column(
@@ -67,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      '${_totalBalance.toStringAsFixed(0)} đ', // Format hiển thị tiền
+                      '${_totalBalance.toStringAsFixed(0)} đ',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 32,
@@ -80,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Phần 2: Tiêu đề Danh sách
+          // Tiêu đề danh sách
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
@@ -94,7 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // Phần 3: Danh sách giao dịch (ListView)
+          // Danh sách giao dịch ListView
           Expanded(
             child: ListView.builder(
               itemCount: mockTransactions.length,
@@ -137,12 +166,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
-      // Nút Thêm giao dịch (Floating Action Button)
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Mở form thêm giao dịch (làm ở phần sau)
-        },
+        onPressed: () => _startAddNewTransaction(context),
         child: Icon(Icons.add),
         backgroundColor: Colors.blueAccent,
       ),
