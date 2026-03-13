@@ -1,5 +1,3 @@
-// Đường dẫn: lib/models/transaction.dart
-
 class Transaction {
   final String id;
   final String title;
