@@ -1,5 +1,5 @@
 // Đường dẫn: lib/screens/home_screen.dart
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import '../models/mock_data.dart';
 import '../models/transaction.dart';
@@ -96,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      '${_totalBalance.toStringAsFixed(0)} đ',
+                      '${NumberFormat('#,##0').format(_totalBalance).replaceAll(',', '.')} đ',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 32,
@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       '${tx.date.day}/${tx.date.month}/${tx.date.year}',
                     ),
                     trailing: Text(
-                      '${tx.isIncome ? '+' : '-'}${tx.amount.toStringAsFixed(0)} đ',
+                      '${tx.isIncome ? '+' : '-'}${NumberFormat('#,##0').format(tx.amount).replaceAll(',', '.')} đ',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
