@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/mock_data.dart';
 import '../models/transaction.dart';
 import '../widgets/new_transaction.dart';
+import 'statistic_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -66,6 +67,14 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 0,
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(Icons.bar_chart, color: Colors.blue),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => StatisticScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: Icon(Icons.info_outline, color: Colors.blue),
             onPressed: () {
