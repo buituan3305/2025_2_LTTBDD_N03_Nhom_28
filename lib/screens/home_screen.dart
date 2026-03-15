@@ -5,6 +5,7 @@ import '../models/mock_data.dart';
 import '../models/transaction.dart';
 import '../widgets/new_transaction.dart';
 import 'statistic_screen.dart';
+import 'infor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -78,7 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: Icon(Icons.info_outline, color: Colors.blue),
             onPressed: () {
-              // Chuyển sang trang Thông tin nhóm
+              // Lệnh chuyển sang trang Thông tin nhóm
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (context) => InforScreen()));
             },
           ),
         ],
