@@ -1,6 +1,7 @@
 // Đường dẫn: lib/screens/home_screen.dart
-import 'package:intl/intl.dart';
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/mock_data.dart';
 import '../models/transaction.dart';
 import '../widgets/new_transaction.dart';
@@ -13,20 +14,21 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Hàm tính tổng số dư
+  // Biến lưu trạng thái Tab đang được chọn (Mặc định 0 là Trang chủ)
+  int _selectedIndex = 0;
+
+  // 1. Logic tính toán và xử lý giao dịch (Giữ nguyên)
   double get _totalBalance {
     double total = 0;
     for (var tx in mockTransactions) {
-      if (tx.isIncome) {
+      if (tx.isIncome)
         total += tx.amount;
-      } else {
+      else
         total -= tx.amount;
-      }
     }
     return total;
   }
 
-  // Hàm thêm giao dịch mới
   void _addNewTransaction(String txTitle, double txAmount, bool isIncome) {
     final newTx = Transaction(
       id: DateTime.now().toString(),
@@ -35,13 +37,148 @@ class _HomeScreenState extends State<HomeScreen> {
       date: DateTime.now(),
       isIncome: isIncome,
     );
-
     setState(() {
-      mockTransactions.insert(0, newTx); // Chèn lên đầu danh sách
+      mockTransactions.insert(0, newTx);
     });
   }
 
-  // Hàm mở Bottom Sheet (Form nhập liệu)
+  void _deleteTransaction(String id) {
+    setState(() {
+      mockTransactions.removeWhere((tx) => tx.id == id);
+    });
+  }
+
+  void _editTransaction(
+    String id,
+    String newTitle,
+    double newAmount,
+    bool newIsIncome,
+  ) {
+    final txIndex = mockTransactions.indexWhere((tx) => tx.id == id);
+    if (txIndex >= 0) {
+      setState(() {
+        mockTransactions[txIndex] = Transaction(
+          id: id,
+          title: newTitle,
+          amount: newAmount,
+          date: mockTransactions[txIndex].date,
+          isIncome: newIsIncome,
+        );
+      });
+    }
+  }
+
+  void _showEditDialog(BuildContext context, Transaction tx) {
+    final titleController = TextEditingController(text: tx.title);
+    final amountController = TextEditingController(
+      text: tx.amount.toStringAsFixed(0),
+    );
+    bool isIncome = tx.isIncome;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: Text(
+                'Chi tiết giao dịch',
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: titleController,
+                    decoration: InputDecoration(labelText: 'Tên giao dịch'),
+                  ),
+                  TextField(
+                    controller: amountController,
+                    decoration: InputDecoration(labelText: 'Số tiền (VNĐ)'),
+                    keyboardType: TextInputType.number,
+                  ),
+                  SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Loại:', style: TextStyle(fontSize: 16)),
+                      Row(
+                        children: [
+                          Text('Chi', style: TextStyle(color: Colors.red)),
+                          Switch(
+                            value: isIncome,
+                            activeColor: Colors.green,
+                            inactiveThumbColor: Colors.red,
+                            inactiveTrackColor: Colors.red[200],
+                            onChanged: (val) {
+                              setStateDialog(() {
+                                isIncome = val;
+                              });
+                            },
+                          ),
+                          Text('Thu', style: TextStyle(color: Colors.green)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              actionsAlignment: MainAxisAlignment.spaceBetween,
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    _deleteTransaction(tx.id);
+                    Navigator.pop(ctx);
+                  },
+                  child: Text(
+                    'Xóa',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text('Hủy', style: TextStyle(color: Colors.grey)),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                      ),
+                      onPressed: () {
+                        if (titleController.text.isEmpty ||
+                            amountController.text.isEmpty)
+                          return;
+                        _editTransaction(
+                          tx.id,
+                          titleController.text,
+                          double.parse(amountController.text),
+                          isIncome,
+                        );
+                        Navigator.pop(ctx);
+                      },
+                      child: Text('Lưu', style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   void _startAddNewTransaction(BuildContext ctx) {
     showModalBottomSheet(
       context: ctx,
@@ -55,8 +192,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  // 2. Giao diện "Trang chủ" được tách ra thành một hàm riêng
+  Widget _buildDashboard() {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -67,29 +204,10 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.bar_chart, color: Colors.blue),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => StatisticScreen()),
-              );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.info_outline, color: Colors.blue),
-            onPressed: () {
-              // Lệnh chuyển sang trang Thông tin nhóm
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (context) => InforScreen()));
-            },
-          ),
-        ],
+        // Đã xóa các nút biểu đồ và chữ i trên này
       ),
       body: Column(
         children: [
-          // Thẻ Tổng số dư
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(16),
@@ -121,22 +239,26 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-
-          // Tiêu đề danh sách
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Giao dịch gần đây',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
+                Text(
+                  'Chạm để sửa/xóa',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
               ],
             ),
           ),
-
-          // Danh sách giao dịch ListView
           Expanded(
             child: ListView.builder(
               itemCount: mockTransactions.length,
@@ -148,6 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: ListTile(
+                    onTap: () => _showEditDialog(context, tx),
                     leading: CircleAvatar(
                       backgroundColor: tx.isIncome
                           ? Colors.green[100]
@@ -179,10 +302,100 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // Hàm tạo từng nút bấm ở thanh BottomBar
+  Widget _buildTabItem(IconData icon, String label, int index) {
+    Color color = _selectedIndex == index ? Colors.blueAccent : Colors.grey;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: 4.0,
+          horizontal: 16.0,
+        ), // GIẢM VERTICAL XUỐNG 4.0
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color),
+            SizedBox(height: 2), // Ép icon và chữ lại gần nhau hơn
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 3. KHUNG SƯỜN CHÍNH (Chứa Bottom Navigation Bar)
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // IndexedStack giúp giữ nguyên trạng thái các tab khi chuyển đổi
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          _buildDashboard(), // Index 0: Trang chủ
+          StatisticScreen(), // Index 1: Báo cáo
+          InforScreen(), // Index 2: Tôi
+        ],
+      ),
+
+      // Nút cộng (+) nổi ở giữa
       floatingActionButton: FloatingActionButton(
         onPressed: () => _startAddNewTransaction(context),
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blueAccent,
+        child: Icon(Icons.add, size: 30),
+        backgroundColor: Color(0xFFFFD54F), // Màu vàng giống ảnh của bạn
+        foregroundColor: Colors.black, // Icon màu đen
+        elevation: 4,
+      ),
+
+      // Đẩy nút FAB vào chính giữa và neo vào thanh BottomBar
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      // Thanh Navigation Bar khoét lỗ (Notch)
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(), // Tạo hiệu ứng khoét lỗ bo tròn
+        notchMargin: 8.0, // Khoảng cách từ nút (+) đến viền
+        child: Container(
+          height: 80,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Cụm bên Trái (Trang chủ)
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [_buildTabItem(Icons.receipt_long, 'Trang chủ', 0)],
+                ),
+              ),
+
+              SizedBox(width: 48), // Khoảng trống cho nút (+)
+              // Cụm bên Phải (Báo cáo & Tôi)
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildTabItem(Icons.pie_chart_outline, 'Báo cáo', 1),
+                    _buildTabItem(Icons.person_outline, 'Tôi', 2),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
