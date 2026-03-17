@@ -38,13 +38,13 @@ class StatisticScreen extends StatelessWidget {
     List<String> months = monthlyData.keys.toList();
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.orange[50],
       appBar: AppBar(
         title: Text(
           'Thống kê theo tháng',
           style: TextStyle(color: Colors.black87),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.orange[50],
         elevation: 0,
         iconTheme: IconThemeData(
           color: Colors.black87,

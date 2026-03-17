@@ -195,13 +195,13 @@ class _HomeScreenState extends State<HomeScreen> {
   // 2. Giao diện "Trang chủ" được tách ra thành một hàm riêng
   Widget _buildDashboard() {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.orange[50],
       appBar: AppBar(
         title: Text(
           'Quản lý Tài chính',
           style: TextStyle(color: Colors.black87),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.orange[50],
         elevation: 0,
         centerTitle: true,
         // Đã xóa các nút biểu đồ và chữ i trên này
@@ -216,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              color: Colors.blueAccent,
+              color: const Color.fromARGB(255, 246, 141, 67),
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
                 child: Column(
@@ -248,14 +248,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Giao dịch gần đây',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                Text(
-                  'Chạm để sửa/xóa',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
               ],
             ),
           ),
@@ -285,7 +277,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     subtitle: Text(
-                      '${tx.date.day}/${tx.date.month}/${tx.date.year}',
+                      DateFormat('HH:mm - dd/MM/yyyy').format(tx.date),
+                      style: TextStyle(color: Colors.grey[600]),
                     ),
                     trailing: Text(
                       '${tx.isIncome ? '+' : '-'}${NumberFormat('#,##0').format(tx.amount).replaceAll(',', '.')} đ',
