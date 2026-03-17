@@ -1,5 +1,3 @@
-// Đường dẫn: lib/screens/home_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/mock_data.dart';
@@ -16,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // Biến lưu trạng thái Tab đang được chọn (Mặc định 0 là Trang chủ)
   int _selectedIndex = 0;
+  bool isVietnamese = true; // ngôn ngữ mặc định là tiếng việt
 
   // 1. Logic tính toán và xử lý giao dịch (Giữ nguyên)
   double get _totalBalance {
@@ -85,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(16),
               ),
               title: Text(
-                'Chi tiết giao dịch',
+                isVietnamese ? 'Chi tiết giao dịch' : 'Transaction Details',
                 style: TextStyle(
                   color: Colors.blueAccent,
                   fontWeight: FontWeight.bold,
@@ -96,21 +95,33 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   TextField(
                     controller: titleController,
-                    decoration: InputDecoration(labelText: 'Tên giao dịch'),
+                    decoration: InputDecoration(
+                      labelText: isVietnamese ? 'Tên giao dịch' : 'Title',
+                    ),
                   ),
                   TextField(
                     controller: amountController,
-                    decoration: InputDecoration(labelText: 'Số tiền (VNĐ)'),
+                    decoration: InputDecoration(
+                      labelText: isVietnamese
+                          ? 'Số tiền (VNĐ)'
+                          : 'Amount (VNĐ)',
+                    ),
                     keyboardType: TextInputType.number,
                   ),
                   SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Loại:', style: TextStyle(fontSize: 16)),
+                      Text(
+                        isVietnamese ? 'Loại:' : 'Type:',
+                        style: TextStyle(fontSize: 16),
+                      ),
                       Row(
                         children: [
-                          Text('Chi', style: TextStyle(color: Colors.red)),
+                          Text(
+                            isVietnamese ? 'Chi' : 'Expense',
+                            style: TextStyle(color: Colors.red),
+                          ),
                           Switch(
                             value: isIncome,
                             activeColor: Colors.green,
@@ -122,7 +133,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               });
                             },
                           ),
-                          Text('Thu', style: TextStyle(color: Colors.green)),
+                          Text(
+                            isVietnamese ? 'Thu' : 'Income',
+                            style: TextStyle(color: Colors.green),
+                          ),
                         ],
                       ),
                     ],
@@ -137,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.pop(ctx);
                   },
                   child: Text(
-                    'Xóa',
+                    isVietnamese ? 'Xóa' : 'Delete',
                     style: TextStyle(
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
@@ -149,7 +163,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: Text('Hủy', style: TextStyle(color: Colors.grey)),
+                      child: Text(
+                        isVietnamese ? 'Hủy' : 'Cancel',
+                        style: TextStyle(color: Colors.grey),
+                      ),
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -167,7 +184,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                         Navigator.pop(ctx);
                       },
-                      child: Text('Lưu', style: TextStyle(color: Colors.white)),
+                      child: Text(
+                        isVietnamese ? 'Lưu' : 'Save',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -198,13 +218,36 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.orange[50],
       appBar: AppBar(
         title: Text(
-          'Quản lý Tài chính',
+          isVietnamese ? 'Quản lý Tài chính' : 'Finance Manager',
           style: TextStyle(color: Colors.black87),
         ),
         backgroundColor: Colors.orange[50],
         elevation: 0,
         centerTitle: true,
         // Đã xóa các nút biểu đồ và chữ i trên này
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                isVietnamese = !isVietnamese; // Đảo ngược ngôn ngữ khi bấm
+              });
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.blue[100],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                isVietnamese ? 'VN' : 'EN', // Nếu đang VN thì hiện nút EN
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -222,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Tổng số dư',
+                      isVietnamese ? 'Tổng số dư' : 'Total Balance',
                       style: TextStyle(color: Colors.white70, fontSize: 16),
                     ),
                     SizedBox(height: 8),
@@ -245,7 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Giao dịch gần đây',
+                  isVietnamese ? 'Giao dịch gần đây' : 'Recent Transactions',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -371,7 +414,13 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [_buildTabItem(Icons.receipt_long, 'Trang chủ', 0)],
+                  children: [
+                    _buildTabItem(
+                      Icons.receipt_long,
+                      isVietnamese ? 'Trang chủ' : 'Home',
+                      0,
+                    ),
+                  ],
                 ),
               ),
 
@@ -381,8 +430,16 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildTabItem(Icons.pie_chart_outline, 'Báo cáo', 1),
-                    _buildTabItem(Icons.person_outline, 'Tôi', 2),
+                    _buildTabItem(
+                      Icons.pie_chart_outline,
+                      isVietnamese ? 'Báo cáo' : 'Report',
+                      1,
+                    ),
+                    _buildTabItem(
+                      Icons.person_outline,
+                      isVietnamese ? 'Tôi' : 'Profile',
+                      2,
+                    ),
                   ],
                 ),
               ),

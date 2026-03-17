@@ -1,5 +1,3 @@
-// Đường dẫn: lib/screens/infor_screen.dart
-
 import 'package:flutter/material.dart';
 
 class InforScreen extends StatelessWidget {

@@ -1,5 +1,3 @@
-// Đường dẫn: lib/screens/statistic_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/mock_data.dart';
