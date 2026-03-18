@@ -5,6 +5,7 @@ import '../models/transaction.dart';
 import '../widgets/new_transaction.dart';
 import 'statistic_screen.dart';
 import 'infor_screen.dart';
+import 'package:translator/translator.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -15,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   // Biến lưu trạng thái Tab đang được chọn (Mặc định 0 là Trang chủ)
   int _selectedIndex = 0;
   bool isVietnamese = true; // ngôn ngữ mặc định là tiếng việt
+  final translator = GoogleTranslator();
 
   // 1. Logic tính toán và xử lý giao dịch (Giữ nguyên)
   double get _totalBalance {
@@ -315,9 +317,32 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: tx.isIncome ? Colors.green : Colors.red,
                       ),
                     ),
-                    title: Text(
-                      tx.title,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    // Dòng mới (Sử dụng máy dịch tự động):
+                    title: FutureBuilder<Translation>(
+                      // Gửi chữ lên Google dịch. Nếu đang chọn EN thì dịch sang 'en', ngược lại dịch sang 'vi'
+                      future: translator.translate(
+                        tx.title,
+                        to: isVietnamese ? 'vi' : 'en',
+                      ),
+                      builder: (context, snapshot) {
+                        // Nếu mạng đã dịch xong và có kết quả
+                        if (snapshot.hasData) {
+                          return Text(
+                            snapshot.data!.text, // In chữ đã dịch ra màn hình
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          );
+                        }
+                        // Trong lúc đang chờ mạng dịch (khoảng 0.5s), hiện chữ mờ mờ để báo hiệu
+                        else {
+                          return Text(
+                            '...',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey,
+                            ),
+                          );
+                        }
+                      },
                     ),
                     subtitle: Text(
                       DateFormat('HH:mm - dd/MM/yyyy').format(tx.date),
